@@ -1,0 +1,48 @@
+# OS files
+.DS_Store
+
+# Local course configuration
+lecturer.toml
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Large media files
+*.wav
+*.webm
+*.mp4
+*.mp3
+
+# Generated output
+output/
+!output/.gitkeep
+
+# Intermediate video clips
+.clips/
+
+# Lecture content (generated artifacts, not part of the tooling)
+content/
+!content/.gitkeep
+
+# Slide PDF exports
+*.pdf
+
+# Brainstorming session artifacts
+.superpowers/
+
+# Utility scripts with credentials
+util/
+
+# Planning docs (internal)
+docs/superpowers/
+
+# Alternative config files
+lecturer-*.toml

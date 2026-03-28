@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lecturer"
+version = "0.1.0"
+description = "Tools to generate lecture content"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "elevenlabs>=2.39.0",
+    "faster-whisper>=1.2.1",
+    "mlx-whisper>=0.4.3",
+    "pypdf>=6.9.2",
+]
+
+[project.optional-dependencies]
+tts = ["elevenlabs"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lecturer"]
