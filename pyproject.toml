@@ -10,13 +10,12 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "elevenlabs>=2.39.0",
-    "faster-whisper>=1.2.1",
-    "mlx-whisper>=0.4.3",
     "pypdf>=6.9.2",
 ]
 
 [project.optional-dependencies]
-tts = ["elevenlabs"]
+transcribe = ["faster-whisper>=1.2.1"]
+transcribe-apple = ["mlx-whisper>=0.4.3"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lecturer"]

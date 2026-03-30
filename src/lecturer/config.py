@@ -41,7 +41,9 @@ def load_config() -> dict:
     Paths are resolved to absolute Path objects.
     """
     root = _find_project_root()
-    config_path = root / CONFIG_FILENAME
+    # Check cwd first (for Docker: lecturer.toml in /course, code in /app)
+    cwd_config = Path.cwd() / CONFIG_FILENAME
+    config_path = cwd_config if cwd_config.exists() else root / CONFIG_FILENAME
 
     config = {"name": "", "content_dir": "", "output_dir": "", "lectures": [],
               "voice_id": ""}

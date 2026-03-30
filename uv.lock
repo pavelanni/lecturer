@@ -390,25 +390,25 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "elevenlabs" },
-    { name = "faster-whisper" },
-    { name = "mlx-whisper" },
     { name = "pypdf" },
 ]
 
 [package.optional-dependencies]
-tts = [
-    { name = "elevenlabs" },
+transcribe = [
+    { name = "faster-whisper" },
+]
+transcribe-apple = [
+    { name = "mlx-whisper" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "elevenlabs", specifier = ">=2.39.0" },
-    { name = "elevenlabs", marker = "extra == 'tts'" },
-    { name = "faster-whisper", specifier = ">=1.2.1" },
-    { name = "mlx-whisper", specifier = ">=0.4.3" },
+    { name = "faster-whisper", marker = "extra == 'transcribe'", specifier = ">=1.2.1" },
+    { name = "mlx-whisper", marker = "extra == 'transcribe-apple'", specifier = ">=0.4.3" },
     { name = "pypdf", specifier = ">=6.9.2" },
 ]
-provides-extras = ["tts"]
+provides-extras = ["transcribe", "transcribe-apple"]
 
 [[package]]
 name = "llvmlite"
