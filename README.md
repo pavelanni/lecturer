@@ -16,7 +16,41 @@ assembly. The toolkit is language-agnostic — it has been used for
 courses in Russian and English, and supports any language that
 ElevenLabs TTS can synthesize.
 
-## Setup
+## Quick start with Docker
+
+The easiest way to use Lecturer — no need to install Python, Node.js,
+or ffmpeg:
+
+```shell
+# Pull the image (supports amd64 and arm64)
+docker pull ghcr.io/pavelanni/lecturer
+
+# See available commands
+docker run --rm ghcr.io/pavelanni/lecturer help
+
+# Generate slide images from your course directory
+docker run --rm -v ./my-course:/course ghcr.io/pavelanni/lecturer generate-slides
+
+# Generate audio (requires ElevenLabs API key)
+docker run --rm -v ./my-course:/course \
+    -e ELEVENLABS_API_KEY=sk_... \
+    ghcr.io/pavelanni/lecturer generate-audio
+
+# Build videos
+docker run --rm -v ./my-course:/course ghcr.io/pavelanni/lecturer build-videos --clean
+
+# Concatenate all lecture videos into one
+docker run --rm -v ./my-course:/course ghcr.io/pavelanni/lecturer concat
+```
+
+Your course directory should contain `lecturer.toml` (see
+Configuration below) and a `content/` subdirectory with your lectures.
+
+Works with Docker and Podman on Linux, macOS, and Windows.
+
+## Setup (without Docker)
+
+If you prefer to run the tools directly:
 
 ```shell
 # Python dependencies
