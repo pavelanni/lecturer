@@ -160,35 +160,39 @@ with Claude Code, these skills complement the lecture workflow:
 
 ## Batch scripts
 
+All scripts take the course directory as the first argument:
+
 | Script | What it does |
 |---|---|
-| `./generate_slides.sh` | Export all slides to PNG + PDF via Marp |
-| `./generate_all_audio.sh` | Generate MP3 audio for all lectures via ElevenLabs |
-| `./build_all_videos.sh` | Assemble per-lecture MP4 videos from PNGs + MP3s |
-| `./concat_videos.sh` | Concatenate all lecture videos into a single MP4 |
+| `./generate_slides.sh <course>` | Export all slides to PNG + PDF via Marp |
+| `./generate_all_audio.sh <course>` | Generate MP3 audio for all lectures via ElevenLabs |
+| `./build_all_videos.sh <course>` | Assemble per-lecture MP4 videos from PNGs + MP3s |
+| `./concat_videos.sh <course>` | Concatenate all lecture videos into a single MP4 |
 
-Each script discovers lectures from `lecturer.toml` and processes
-them in order. Pass a lecture name as an argument to process just one:
+Each script reads `lecturer.toml` from the course directory and
+processes lectures in the configured order. Pass a lecture name after
+the course directory to process just one:
 
 ```shell
-./generate_slides.sh lecture-01-intro
-./generate_all_audio.sh lecture-02-basics
+./generate_slides.sh /path/to/my-course
+./generate_slides.sh /path/to/my-course lecture-01-intro
+./generate_all_audio.sh /path/to/my-course lecture-02-basics
 ```
 
 ### Useful flags
 
 ```shell
 # Regenerate audio even if MP3s already exist
-./generate_all_audio.sh --force
+./generate_all_audio.sh /path/to/my-course --force
 
 # Preview what videos would be built without building them
-./build_all_videos.sh --dry-run
+./build_all_videos.sh /path/to/my-course --dry-run
 
 # Remove intermediate clips after building
-./build_all_videos.sh --clean
+./build_all_videos.sh /path/to/my-course --clean
 
 # Generate only PDFs (skip PNGs)
-./generate_slides.sh --pdf-only
+./generate_slides.sh /path/to/my-course --pdf-only
 ```
 
 ## Individual commands
@@ -221,12 +225,14 @@ The video assembly has two parameters for pacing:
 ## Full workflow
 
 ```shell
+COURSE=/path/to/my-course
+
 # 1. Create slides interactively with Claude Code
 #    (use the lecture-slides skill)
 #    Output: content/<lecture>/slides/slides.md
 
 # 2. Export slide PNGs and PDFs
-./generate_slides.sh
+./generate_slides.sh $COURSE
 
 # 3. Create narration scripts with Claude Code
 #    (use the lecture-script skill)
@@ -234,16 +240,17 @@ The video assembly has two parameters for pacing:
 
 # 4. Generate audio from narration scripts
 export ELEVENLABS_API_KEY=your_key_here
-./generate_all_audio.sh
+./generate_all_audio.sh $COURSE
 
 # 5. Assemble videos
-./build_all_videos.sh --clean
+./build_all_videos.sh $COURSE --clean
 
 # 6. Concatenate into a single video (optional)
-./concat_videos.sh
+./concat_videos.sh $COURSE
 
 # 7. Merge all slide PDFs into one handout (optional)
-uv run python -m lecturer.concat_pdf -o output/course-slides.pdf
+LECTURER_COURSE_DIR=$COURSE uv run python -m lecturer.concat_pdf \
+    -o $COURSE/output/course-slides.pdf
 ```
 
 ## Pronunciation

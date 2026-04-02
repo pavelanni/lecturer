@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Entrypoint for the Lecturer Docker container.
 #
-# Routes subcommands to the appropriate tool. Runs from /course
-# (the mounted course directory).
+# Routes subcommands to the appropriate tool. The course directory
+# is mounted at /course.
 set -euo pipefail
 
 APP_DIR="/app"
+COURSE_DIR="/course"
+export LECTURER_COURSE_DIR="$COURSE_DIR"
 
 # Ensure lecturer.toml exists in the mounted volume
 check_config() {
-    if [[ ! -f "lecturer.toml" ]]; then
+    if [[ ! -f "$COURSE_DIR/lecturer.toml" ]]; then
         echo "Error: lecturer.toml not found in the mounted directory." >&2
         echo "" >&2
         echo "Make sure you mount your course directory:" >&2
@@ -23,8 +25,8 @@ check_config() {
 
 # Copy default theme if the course doesn't have its own
 ensure_themes() {
-    if [[ ! -d "themes" ]]; then
-        cp -r "$APP_DIR/themes" .
+    if [[ ! -d "$COURSE_DIR/themes" ]]; then
+        cp -r "$APP_DIR/themes" "$COURSE_DIR/"
     fi
 }
 
@@ -33,7 +35,7 @@ case "${1:-help}" in
         check_config
         ensure_themes
         shift
-        exec "$APP_DIR/generate_slides.sh" "$@"
+        exec "$APP_DIR/generate_slides.sh" "$COURSE_DIR" "$@"
         ;;
     generate-audio)
         check_config
@@ -43,26 +45,26 @@ case "${1:-help}" in
             exit 1
         fi
         shift
-        exec "$APP_DIR/generate_all_audio.sh" "$@"
+        exec "$APP_DIR/generate_all_audio.sh" "$COURSE_DIR" "$@"
         ;;
     build-videos)
         check_config
         shift
-        exec "$APP_DIR/build_all_videos.sh" "$@"
+        exec "$APP_DIR/build_all_videos.sh" "$COURSE_DIR" "$@"
         ;;
     concat)
         check_config
         shift
-        exec "$APP_DIR/concat_videos.sh" "$@"
+        exec "$APP_DIR/concat_videos.sh" "$COURSE_DIR" "$@"
         ;;
     transcribe)
         shift
-        exec uv run --project "$APP_DIR" python -m lecturer.transcribe "$@"
+        exec uv run --project /app python -m lecturer.transcribe "$@"
         ;;
     concat-pdf)
         check_config
         shift
-        exec uv run --project "$APP_DIR" python -m lecturer.concat_pdf "$@"
+        exec uv run --project /app python -m lecturer.concat_pdf "$@"
         ;;
     shell)
         exec /bin/bash

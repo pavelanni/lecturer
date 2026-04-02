@@ -2,22 +2,33 @@
 # Build videos for all lectures using ffmpeg.
 #
 # Usage:
-#   ./build_all_videos.sh                    # all lectures
-#   ./build_all_videos.sh ui4iot-web         # single lecture by name
-#   ./build_all_videos.sh --clean            # remove intermediate clips after assembly
-#   ./build_all_videos.sh --dry-run          # show what would be assembled
+#   ./build_all_videos.sh /path/to/course              # all lectures
+#   ./build_all_videos.sh /path/to/course intro         # single lecture
+#   ./build_all_videos.sh /path/to/course --clean       # remove intermediate clips
+#   ./build_all_videos.sh /path/to/course --dry-run     # preview only
 #
-# Lectures are discovered from the content directory configured in
-# lecturer.toml. Pass lecture names as arguments to override.
+# Lectures are discovered from lecturer.toml in the course directory.
 #
 # Requires: uv, ffmpeg
 
 set -euo pipefail
 
+# In Docker, uv needs --project /app to find the Python package
+UV="uv run"
+[[ "${LECTURER_DOCKER:-}" == "1" ]] && UV="uv run --project /app"
+
 CLEAN=false
 DRY_RUN=false
 
-# Parse flags
+# First positional arg is the course directory
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <course-dir> [lecture-name...] [--clean] [--dry-run]" >&2
+    exit 1
+fi
+export LECTURER_COURSE_DIR="$1"
+shift
+
+# Parse remaining flags and lecture names
 args=()
 for arg in "$@"; do
     if [[ "$arg" == "--clean" ]]; then
@@ -31,15 +42,14 @@ done
 set -- "${args[@]+"${args[@]}"}"
 
 # Discover content directory from config
-CONTENT_DIR=$(uv run python -c "from lecturer.config import get_content_dir; print(get_content_dir())")
+CONTENT_DIR=$($UV python -c "from lecturer.config import get_content_dir; print(get_content_dir())")
 
 if [[ $# -gt 0 ]]; then
     LECTURES=("$@")
 else
-    # Use lecture order from lecturer.toml (falls back to auto-discovery)
     while IFS= read -r line; do
         LECTURES+=("$line")
-    done < <(uv run python -c "from lecturer.config import list_lectures; [print(l.name) for l in list_lectures()]")
+    done < <($UV python -c "from lecturer.config import list_lectures; [print(l.name) for l in list_lectures()]")
 fi
 
 if [[ ${#LECTURES[@]} -eq 0 ]]; then
@@ -63,7 +73,8 @@ for lecture in "${LECTURES[@]}"; do
     echo "Building video: $lecture"
     echo "========================================"
 
-    cmd=(uv run python -m lecturer.build_video "$lecture")
+    # shellcheck disable=SC2086
+    cmd=($UV python -m lecturer.build_video "$lecture")
 
     if [[ "$DRY_RUN" == true ]]; then
         cmd+=(--dry-run)

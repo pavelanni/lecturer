@@ -3,19 +3,30 @@
 # defined in lecturer.toml.
 #
 # Usage:
-#   ./concat_videos.sh                       # default output to output_dir
-#   ./concat_videos.sh -o my_lecture.mp4     # custom output path
-#   ./concat_videos.sh --dry-run             # show what would be concatenated
+#   ./concat_videos.sh /path/to/course                 # default output
+#   ./concat_videos.sh /path/to/course -o out.mp4      # custom output
+#   ./concat_videos.sh /path/to/course --dry-run       # preview only
 #
 # Requires: ffmpeg
 
 set -euo pipefail
 
+# In Docker, uv needs --project /app to find the Python package
+UV="uv run"
+[[ "${LECTURER_DOCKER:-}" == "1" ]] && UV="uv run --project /app"
+
 DRY_RUN=false
 OUTPUT=""
 
-# Parse flags
-args=()
+# First positional arg is the course directory
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <course-dir> [-o output.mp4] [--dry-run]" >&2
+    exit 1
+fi
+export LECTURER_COURSE_DIR="$1"
+shift
+
+# Parse remaining flags
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --dry-run)
@@ -27,23 +38,22 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         *)
-            args+=("$1")
-            shift
+            echo "Unknown argument: $1" >&2
+            exit 1
             ;;
     esac
 done
-set -- "${args[@]+"${args[@]}"}"
 
 # Discover directories from config
-CONTENT_DIR=$(uv run python -c "from lecturer.config import get_content_dir; print(get_content_dir())")
-OUTPUT_DIR=$(uv run python -c "from lecturer.config import get_output_dir; print(get_output_dir())")
-COURSE_NAME=$(uv run python -c "from lecturer.config import load_config; print(load_config()['name'])")
+CONTENT_DIR=$($UV python -c "from lecturer.config import get_content_dir; print(get_content_dir())")
+OUTPUT_DIR=$($UV python -c "from lecturer.config import get_output_dir; print(get_output_dir())")
+COURSE_NAME=$($UV python -c "from lecturer.config import load_config; print(load_config()['name'])")
 
 # Discover lectures in order
 LECTURES=()
 while IFS= read -r line; do
     LECTURES+=("$line")
-done < <(uv run python -c "from lecturer.config import list_lectures; [print(l.name) for l in list_lectures()]")
+done < <($UV python -c "from lecturer.config import list_lectures; [print(l.name) for l in list_lectures()]")
 
 if [[ ${#LECTURES[@]} -eq 0 ]]; then
     echo "No lectures found"
@@ -69,7 +79,6 @@ fi
 # Determine output path
 if [[ -z "$OUTPUT" ]]; then
     mkdir -p "$OUTPUT_DIR"
-    # Use course name, fallback to "lecture"
     SAFE_NAME=$(echo "$COURSE_NAME" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
     OUTPUT="$OUTPUT_DIR/${SAFE_NAME:-lecture}.mp4"
 fi
