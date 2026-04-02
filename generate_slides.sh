@@ -41,12 +41,13 @@ set -- "${args[@]+"${args[@]}"}"
 CONTENT_DIR=$($UV python -c "from lecturer.config import get_content_dir; print(get_content_dir())")
 
 # Use theme from course dir if available, fall back to bundled theme
-if [[ -d "$LECTURER_COURSE_DIR/themes" ]]; then
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$LECTURER_COURSE_DIR/themes/graph_paper.css" ]]; then
     THEME="$LECTURER_COURSE_DIR/themes/graph_paper.css"
 elif [[ "${LECTURER_DOCKER:-}" == "1" ]]; then
     THEME="/app/themes/graph_paper.css"
 else
-    THEME="themes/graph_paper.css"
+    THEME="$SCRIPT_DIR/themes/graph_paper.css"
 fi
 
 if [[ $# -gt 0 ]]; then

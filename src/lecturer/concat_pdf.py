@@ -38,7 +38,7 @@ def find_lecture_pdfs(
     if lecture_names:
         dirs = [(name, content_dir / name) for name in lecture_names]
     else:
-        dirs = [(d.name, d) for d in list_lectures(content_dir)]
+        dirs = [(d.name, d) for d in list_lectures(content_dir=content_dir)]
 
     found = []
     for name, lecture_dir in dirs:

@@ -7,7 +7,6 @@ CLAUDE.md
 content/
 output/
 recordings/
-docs/
 util/
 .venv
 __pycache__

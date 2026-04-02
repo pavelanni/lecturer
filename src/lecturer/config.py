@@ -107,16 +107,28 @@ def get_output_dir(course_dir: Path | str | None = None) -> Path:
     return load_config(course_dir)["output_dir"]
 
 
-def list_lectures(course_dir: Path | str | None = None) -> list[Path]:
+def list_lectures(
+    course_dir: Path | str | None = None,
+    *,
+    content_dir: Path | str | None = None,
+) -> list[Path]:
     """List lecture directories under the content dir.
 
     If lecturer.toml defines a ``lectures`` list, returns directories in
     that order.  Otherwise falls back to alphabetically sorted discovery
     of directories that contain a slides/ subdirectory or a
     narration_script.md file.
+
+    Args:
+        course_dir: Path to the course directory containing lecturer.toml.
+        content_dir: Direct path to the content directory (skips config).
     """
-    config = load_config(course_dir)
-    content_dir = config["content_dir"]
+    if content_dir is not None:
+        content_dir = Path(content_dir).resolve()
+        config = {"lectures": []}
+    else:
+        config = load_config(course_dir)
+        content_dir = config["content_dir"]
 
     if not content_dir.is_dir():
         return []

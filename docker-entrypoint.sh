@@ -57,10 +57,6 @@ case "${1:-help}" in
         shift
         exec "$APP_DIR/concat_videos.sh" "$COURSE_DIR" "$@"
         ;;
-    transcribe)
-        shift
-        exec uv run --project /app python -m lecturer.transcribe "$@"
-        ;;
     concat-pdf)
         check_config
         shift
@@ -82,7 +78,6 @@ Commands:
   build-videos       Assemble per-lecture MP4 videos
   concat             Concatenate all videos into one MP4
   concat-pdf         Merge all slide PDFs into one handout
-  transcribe         Transcribe a recording with Whisper
   shell              Open a bash shell in the container
   help               Show this help message
 
