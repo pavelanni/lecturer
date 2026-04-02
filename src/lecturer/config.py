@@ -1,50 +1,78 @@
 """Load project configuration from lecturer.toml.
 
-Looks for lecturer.toml in the current working directory or the project
-root (directory containing pyproject.toml). Falls back to ./content and
-./output if no config file is found.
+The config file lives in the course directory alongside the content/
+and output/ subdirectories. All paths in the config are resolved
+relative to the directory containing lecturer.toml.
+
+Course directory layout:
+
+    my-course/
+        lecturer.toml
+        content/
+            lecture-01/
+            lecture-02/
+        output/
 
 Config file format (TOML):
 
     [course]
     name = "My Course"
-    content_dir = "/absolute/path/to/content"
-    output_dir = "/absolute/path/to/output"
-    lectures = ["lecture-01", "lecture-02", "lecture-03"]
+    content_dir = "content"
+    output_dir = "output"
+    voice_id = "your-elevenlabs-voice-id"
+    lectures = ["lecture-01", "lecture-02"]
 """
 
+import os
+import sys
 import tomllib
 from pathlib import Path
 
 CONFIG_FILENAME = "lecturer.toml"
 
-# Defaults (relative to project root)
 _DEFAULTS = {
     "content_dir": "content",
     "output_dir": "output",
 }
 
 
-def _find_project_root() -> Path:
-    """Walk up from cwd to find the directory containing pyproject.toml."""
-    current = Path.cwd()
-    for parent in [current, *current.parents]:
-        if (parent / "pyproject.toml").exists():
-            return parent
-    return current
+def _find_course_dir() -> Path:
+    """Find the course directory.
+
+    Checks (in order):
+    1. LECTURER_COURSE_DIR environment variable
+    2. Current working directory
+    """
+    env_dir = os.environ.get("LECTURER_COURSE_DIR")
+    if env_dir:
+        return Path(env_dir).resolve()
+    return Path.cwd()
 
 
-def load_config() -> dict:
+def load_config(course_dir: Path | str | None = None) -> dict:
     """Load and return the course configuration.
 
-    Returns a dict with keys: name, content_dir, output_dir.
-    Paths are resolved to absolute Path objects.
-    """
-    root = _find_project_root()
-    config_path = root / CONFIG_FILENAME
+    Args:
+        course_dir: Path to the course directory containing lecturer.toml.
+                    If None, uses LECTURER_COURSE_DIR env var or cwd.
 
-    config = {"name": "", "content_dir": "", "output_dir": "", "lectures": [],
-              "voice_id": ""}
+    Returns a dict with keys: name, content_dir, output_dir, lectures,
+    voice_id. Paths are resolved to absolute Path objects.
+    """
+    if course_dir is not None:
+        course_dir = Path(course_dir).resolve()
+    else:
+        course_dir = _find_course_dir()
+
+    config_path = course_dir / CONFIG_FILENAME
+
+    config = {
+        "name": "",
+        "content_dir": "",
+        "output_dir": "",
+        "lectures": [],
+        "voice_id": "",
+    }
 
     if config_path.exists():
         with open(config_path, "rb") as f:
@@ -59,36 +87,47 @@ def load_config() -> dict:
         config["content_dir"] = _DEFAULTS["content_dir"]
         config["output_dir"] = _DEFAULTS["output_dir"]
 
-    # Resolve relative paths against project root
+    # Resolve relative paths against the course directory
     for key in ("content_dir", "output_dir"):
         p = Path(config[key])
         if not p.is_absolute():
-            p = root / p
+            p = course_dir / p
         config[key] = p.resolve()
 
     return config
 
 
-def get_content_dir() -> Path:
+def get_content_dir(course_dir: Path | str | None = None) -> Path:
     """Return the resolved content directory path."""
-    return load_config()["content_dir"]
+    return load_config(course_dir)["content_dir"]
 
 
-def get_output_dir() -> Path:
+def get_output_dir(course_dir: Path | str | None = None) -> Path:
     """Return the resolved output directory path."""
-    return load_config()["output_dir"]
+    return load_config(course_dir)["output_dir"]
 
 
-def list_lectures(content_dir: Path | None = None) -> list[Path]:
+def list_lectures(
+    course_dir: Path | str | None = None,
+    *,
+    content_dir: Path | str | None = None,
+) -> list[Path]:
     """List lecture directories under the content dir.
 
     If lecturer.toml defines a ``lectures`` list, returns directories in
     that order.  Otherwise falls back to alphabetically sorted discovery
     of directories that contain a slides/ subdirectory or a
     narration_script.md file.
+
+    Args:
+        course_dir: Path to the course directory containing lecturer.toml.
+        content_dir: Direct path to the content directory (skips config).
     """
-    config = load_config()
-    if content_dir is None:
+    if content_dir is not None:
+        content_dir = Path(content_dir).resolve()
+        config = {"lectures": []}
+    else:
+        config = load_config(course_dir)
         content_dir = config["content_dir"]
 
     if not content_dir.is_dir():

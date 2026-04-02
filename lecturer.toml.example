@@ -1,10 +1,14 @@
 # Lecturer configuration
 # Copy this file to lecturer.toml and adjust for your course.
+#
+# Paths can be absolute or relative to this file's directory.
+# Relative paths are recommended — they work with both local and
+# Docker workflows.
 
 [course]
 name = "My Course"
-content_dir = "/path/to/my-course/content"
-output_dir = "/path/to/my-course/output"
+content_dir = "content"
+output_dir = "output"
 voice_id = "your-elevenlabs-voice-id"
 lectures = [
     "lecture-01-intro",
