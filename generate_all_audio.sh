@@ -54,6 +54,7 @@ set -- "${args[@]+"${args[@]}"}"
 # Discover content directory from config
 CONTENT_DIR=$($UV python -c "from lecturer.config import get_content_dir; print(get_content_dir())")
 
+LECTURES=()
 if [[ $# -gt 0 ]]; then
     LECTURES=("$@")
 else

@@ -50,6 +50,7 @@ else
     THEME="$SCRIPT_DIR/themes/graph_paper.css"
 fi
 
+LECTURES=()
 if [[ $# -gt 0 ]]; then
     LECTURES=("$@")
 else
