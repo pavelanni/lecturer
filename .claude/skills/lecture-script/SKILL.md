@@ -88,6 +88,11 @@ Produce a single Markdown file. Use this exact structure:
 - Write for spoken delivery, not reading: shorter sentences, no parenthetical
   asides, no footnote-style qualifiers
 - Use the second person ("you") to address students directly
+- **Formal vs informal "you":** For languages that distinguish between
+  singular/informal and plural/formal second person (Russian ты/вы, French
+  tu/vous, German du/Sie, Spanish tú/usted, etc.), ask the user which form
+  to use before generating the script. Default to the formal/plural form if
+  the user doesn't specify a preference
 - Academic but not stiff — the register of a clear, well-prepared lecturer,
   not a textbook
 - Avoid throat-clearing openers: do NOT start with "So today we will...",
