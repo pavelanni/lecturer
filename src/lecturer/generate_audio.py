@@ -71,7 +71,7 @@ def parse_slides(script_path: Path) -> list[dict]:
     return slides
 
 
-def estimate_cost(slides: list[dict], price_per_1k: float = 0.06) -> tuple[int, float]:
+def estimate_cost(slides: list[dict], price_per_1k: float = 0.22) -> tuple[int, float]:
     total_chars = sum(len(s["text"]) for s in slides)
     cost = total_chars / 1000 * price_per_1k
     return total_chars, cost
@@ -296,7 +296,7 @@ def main() -> None:
     print(f"Script:  {script_path.name}")
     print(f"Slides:  {len(slides)}")
     print(f"Chars:   {total_chars:,}")
-    print(f"Cost:    ~${cost:.2f} at $0.06/1K chars")
+    print(f"Cost:    ~${cost:.2f} at $0.22/1K chars")
     print()
 
     if args.dry_run:

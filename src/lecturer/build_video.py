@@ -267,7 +267,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--pause",
         type=float,
-        default=0.8,
+        default=1.0,
         help="Seconds of silence before narration on each slide (default: 0.8)",
     )
     parser.add_argument(

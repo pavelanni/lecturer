@@ -19,6 +19,7 @@ UV="uv run"
 
 MODEL="eleven_v3"
 FORCE=false
+SPEED=0.8
 
 if [[ -z "${ELEVENLABS_API_KEY:-}" ]]; then
     echo "Error: ELEVENLABS_API_KEY is not set." >&2
@@ -87,7 +88,7 @@ for lecture in "${LECTURES[@]}"; do
     # shellcheck disable=SC2086
     cmd=($UV python -m lecturer.generate_audio
         "$script"
-        --voice-id "$VOICE_ID"
+        --voice-id "$VOICE_ID" --speed "$SPEED"
         --model "$MODEL")
 
     if [[ "$FORCE" == true ]]; then
